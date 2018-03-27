@@ -13,19 +13,47 @@ class GameScene: SKScene {
     
     private var label : SKLabelNode?
     private var spinnyNode : SKShapeNode?
+    private var numberNodes : [SKShapeNode]?
     
     override func didMove(to view: SKView) {
         
-        // Get label node from scene and store it for use later
-        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-        if let label = self.label {
-            label.alpha = 0.0
-            label.run(SKAction.fadeIn(withDuration: 2.0))
-        }
         
         // Create shape node to use during mouse interaction
         let w = (self.size.width + self.size.height) * 0.05
-        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
+        self.spinnyNode = SKShapeNode(rectOf: CGSize(width: w, height: w), cornerRadius: w * 0.3)
+        
+        let circleDiameter: CGFloat = 80.0
+        let circleRadius: CGFloat = circleDiameter / 2.0
+        let spacing: CGFloat = 20.0
+        let horizontalNodeCount: Int = Int(floor((self.size.width - spacing) / (circleDiameter + spacing)))
+        let verticalNodeCount: Int = 10
+        
+        var nodes: [SKShapeNode] = []
+        
+        for x in 0..<horizontalNodeCount {
+            for y in 0..<verticalNodeCount {
+                let node = SKShapeNode(circleOfRadius: circleDiameter / 2.0)
+                var xPosition: CGFloat
+                var yPosition: CGFloat
+                if x == 0 {
+                    xPosition = spacing + circleRadius
+                } else {
+                    xPosition = spacing + circleRadius + (CGFloat(x) * (circleDiameter + spacing))
+                }
+                
+                if y == 0 {
+                    yPosition = self.size.height - (spacing + circleRadius)
+                } else {
+                    yPosition = self.size.height - (spacing + circleRadius + (CGFloat(y) * (circleDiameter + spacing)))
+                }
+                
+                node.position = CGPoint(x: xPosition, y: yPosition)
+                node.fillColor = SKColor.clear
+                node.strokeColor = SKColor.white
+                nodes.append(node)
+                self.addChild(node)
+            }
+        }
         
         if let spinnyNode = self.spinnyNode {
             spinnyNode.lineWidth = 2.5
@@ -55,6 +83,12 @@ class GameScene: SKScene {
     }
     
     func touchUp(atPoint pos : CGPoint) {
+        guard let numberNodes = numberNodes else {
+            return
+        }
+        
+        
+        
         if let n = self.spinnyNode?.copy() as! SKShapeNode? {
             n.position = pos
             n.strokeColor = SKColor.red
@@ -63,10 +97,6 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let label = self.label {
-            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-        }
-        
         for t in touches { self.touchDown(atPoint: t.location(in: self)) }
     }
     
